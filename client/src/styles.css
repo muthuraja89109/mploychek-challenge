@@ -1,0 +1,130 @@
+/* ==========================================================================
+   Design tokens. Components only use these variables, so switching the
+   theme means changing the values in one place.
+   ========================================================================== */
+:root {
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+
+  --bg: #f1f4f8;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --ink: #131e36;
+  --muted: #566176;
+  --line: #d9e0ea;
+  --primary: #1b2b5a;
+  --on-primary: #ffffff;
+  --verified: #0b8f6a;
+  --verified-bg: #dff5ec;
+  --progress: #9a6700;
+  --progress-bg: #fbefcf;
+  --flag: #c2334f;
+  --flag-bg: #fbe3e8;
+  --focus: #3b5bdb;
+  --shadow: 0 1px 2px rgb(19 30 54 / 6%), 0 8px 24px rgb(19 30 54 / 6%);
+}
+
+:root[data-theme='dark'] {
+  --bg: #0c1322;
+  --surface: #141d33;
+  --surface-2: #19243e;
+  --ink: #e8edf7;
+  --muted: #94a0b9;
+  --line: #27334f;
+  --primary: #9db2ff;
+  --on-primary: #0c1322;
+  --verified: #3ddba9;
+  --verified-bg: #0f3a31;
+  --progress: #f0bf55;
+  --progress-bg: #3d3216;
+  --flag: #ff7a93;
+  --flag-bg: #461d29;
+  --focus: #9db2ff;
+  --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 25%);
+}
+
+/* ---- Base ---- */
+*, *::before, *::after { box-sizing: border-box; }
+html { color-scheme: light dark; }
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.15; letter-spacing: -0.01em; }
+p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* ---- Surfaces ---- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 42px; padding: 0 18px;
+  border-radius: 10px; border: 1px solid transparent;
+  font-weight: 600; cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+}
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: var(--on-primary); }
+.btn-primary:hover:not(:disabled) { opacity: 0.9; }
+.btn-quiet { background: transparent; border-color: var(--line); color: var(--ink); }
+.btn-quiet:hover:not(:disabled) { background: var(--surface-2); }
+.btn-danger { background: var(--flag); color: #fff; }
+.btn-small { min-height: 34px; padding: 0 12px; font-size: 14px; }
+
+/* ---- Form fields ---- */
+.field { display: grid; gap: 6px; }
+.field > label, .field > .label { font-size: 14px; font-weight: 600; }
+.field input, .field select {
+  min-height: 44px; padding: 0 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+}
+.field input:hover, .field select:hover { border-color: var(--muted); }
+.field input[aria-invalid='true'] { border-color: var(--flag); }
+.field input:disabled { background: var(--surface-2); color: var(--muted); }
+.field-error { color: var(--flag); font-size: 13px; }
+.form-error {
+  background: var(--flag-bg); color: var(--flag);
+  border-radius: 10px; padding: 10px 12px; font-size: 14px; font-weight: 500;
+}
+
+/* ---- Status pills ---- */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+.pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill-verified { background: var(--verified-bg); color: var(--verified); }
+.pill-progress { background: var(--progress-bg); color: var(--progress); }
+.pill-flagged { background: var(--flag-bg); color: var(--flag); }
+
+/* ---- Loading skeleton ---- */
+.skeleton {
+  display: block; border-radius: 6px; min-height: 14px;
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--line) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+}

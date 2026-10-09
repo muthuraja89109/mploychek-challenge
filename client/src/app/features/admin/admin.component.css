@@ -1,0 +1,37 @@
+.head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
+h1 { font-size: 34px; font-weight: 800; }
+.lede { color: var(--muted); margin-top: 6px; }
+.actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.latency { display: flex; align-items: center; gap: 10px; }
+.latency .label { font-size: 14px; font-weight: 600; color: var(--muted); }
+.seg { display: flex; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+.seg button { border: 0; background: transparent; min-height: 32px; padding: 0 12px; border-radius: 7px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.seg button.on { background: var(--primary); color: var(--on-primary); }
+
+.notice { background: var(--verified-bg); color: var(--verified); font-weight: 600; padding: 10px 14px; border-radius: 10px; margin-bottom: 16px; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+.layout.open { grid-template-columns: minmax(0, 1fr) 360px; }
+
+.list { overflow: hidden; }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 680px; }
+th { text-align: left; background: var(--surface-2); border-bottom: 1px solid var(--line); padding: 11px 16px; font-size: 13px; font-weight: 600; color: var(--muted); }
+td { padding: 13px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+.mail { color: var(--muted); font-size: 14px; }
+.date { color: var(--muted); white-space: nowrap; }
+.row-actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
+.ask { font-size: 14px; font-weight: 600; }
+.retry { margin-top: 10px; }
+
+.panel { padding: 22px; position: sticky; top: 90px; }
+.panel form { display: grid; gap: 14px; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; }
+.panel-head h2 { font-size: 22px; font-weight: 700; }
+.hint { color: var(--muted); font-size: 13px; }
+
+@media (max-width: 960px) {
+  .layout.open { grid-template-columns: 1fr; }
+  .panel { position: static; }
+}

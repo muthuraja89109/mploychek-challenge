@@ -1,0 +1,143 @@
+<div class="head">
+  <div>
+    <h1>Manage users</h1>
+    @if (list().status === 'ready') {
+      <p class="lede">{{ $any(list()).data.length }} users, {{ admins() }} of them admins.</p>
+    } @else {
+      <p class="lede">Add people, change roles, or remove access.</p>
+    }
+  </div>
+  <div class="actions">
+    <div class="latency" role="group" aria-label="Simulated API delay">
+      <span class="label">API delay</span>
+      <div class="seg">
+        @for (o of latencyOptions; track o.ms) {
+          <button type="button" [class.on]="latency.ms() === o.ms" [attr.aria-pressed]="latency.ms() === o.ms"
+                  (click)="setLatency(o.ms)">{{ o.label }}</button>
+        }
+      </div>
+    </div>
+    <button class="btn btn-primary" type="button" (click)="openNew()">Add user</button>
+  </div>
+</div>
+
+@if (notice()) {
+  <p class="notice" role="status">{{ notice() }}</p>
+}
+
+<div class="layout" [class.open]="editing() !== null">
+  <section class="card list" aria-label="Users" [attr.aria-busy]="list().status === 'loading'">
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">User ID</th>
+            <th scope="col">Department</th>
+            <th scope="col">Role</th>
+            <th scope="col">Added</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @switch (list().status) {
+            @case ('loading') {
+              @for (i of skeletonRows; track i) {
+                <tr>
+                  <td><span class="skeleton" style="width: 140px"></span></td>
+                  <td><span class="skeleton" style="width: 70px"></span></td>
+                  <td><span class="skeleton" style="width: 90px"></span></td>
+                  <td><span class="skeleton" style="width: 90px"></span></td>
+                  <td><span class="skeleton" style="width: 70px"></span></td>
+                  <td></td>
+                </tr>
+              }
+            }
+            @case ('error') {
+              <tr><td colspan="6">
+                <p class="form-error" role="alert">{{ $any(list()).message }}</p>
+                <button class="btn btn-quiet btn-small retry" type="button" (click)="reload()">Try again</button>
+              </td></tr>
+            }
+            @case ('ready') {
+              @for (u of $any(list()).data; track u.id) {
+                <tr>
+                  <td>
+                    <strong>{{ u.name }}</strong>
+                    <div class="mail">{{ u.email }}</div>
+                  </td>
+                  <td>{{ u.userId }}</td>
+                  <td>{{ u.department }}</td>
+                  <td><app-role-badge [role]="u.role" /></td>
+                  <td class="date">{{ u.createdAt | date: 'd MMM y' }}</td>
+                  <td class="row-actions">
+                    @if (confirmingId() === u.id) {
+                      <span class="ask">Delete {{ u.name }}?</span>
+                      <button class="btn btn-danger btn-small" type="button" (click)="confirmDelete(u)">Delete</button>
+                      <button class="btn btn-quiet btn-small" type="button" (click)="confirmingId.set(null)">Keep</button>
+                    } @else {
+                      <button class="btn btn-quiet btn-small" type="button" (click)="openEdit(u)">Edit</button>
+                      <button class="btn btn-quiet btn-small" type="button" (click)="askDelete(u.id)"
+                              [disabled]="u.id === auth.user()?.id"
+                              [attr.title]="u.id === auth.user()?.id ? 'You cannot delete your own account' : null">Delete</button>
+                    }
+                  </td>
+                </tr>
+              }
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  @if (editing(); as target) {
+    <aside class="card panel" aria-labelledby="panel-h">
+      <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+        <div class="panel-head">
+          <h2 id="panel-h">{{ target === 'new' ? 'Add user' : 'Edit user' }}</h2>
+          <button class="btn btn-quiet btn-small" type="button" (click)="closePanel()">Close</button>
+        </div>
+
+        <div class="field">
+          <label for="f-userId">User ID</label>
+          <input id="f-userId" formControlName="userId" autocomplete="off" [attr.aria-invalid]="isInvalid('userId')" />
+          @if (isInvalid('userId')) { <span class="field-error">Use letters, numbers, dots, dashes or underscores.</span> }
+        </div>
+        <div class="field">
+          <label for="f-name">Full name</label>
+          <input id="f-name" formControlName="name" [attr.aria-invalid]="isInvalid('name')" />
+          @if (isInvalid('name')) { <span class="field-error">Enter a name.</span> }
+        </div>
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input id="f-email" type="email" formControlName="email" [attr.aria-invalid]="isInvalid('email')" />
+          @if (isInvalid('email')) { <span class="field-error">Enter a valid email address.</span> }
+        </div>
+        <div class="field">
+          <label for="f-dept">Department</label>
+          <input id="f-dept" formControlName="department" />
+        </div>
+        <div class="field">
+          <label for="f-role">Role</label>
+          <select id="f-role" formControlName="role">
+            @for (r of roles; track r) { <option [value]="r">{{ r }}</option> }
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-pass">{{ target === 'new' ? 'Password' : 'New password' }}</label>
+          <input id="f-pass" type="password" formControlName="password" autocomplete="new-password"
+                 [attr.aria-invalid]="isInvalid('password')" />
+          @if (isInvalid('password')) { <span class="field-error">Use at least 6 characters.</span> }
+          @if (target !== 'new') { <span class="hint">Leave blank to keep the current password.</span> }
+        </div>
+
+        @if (formError()) { <p class="form-error" role="alert">{{ formError() }}</p> }
+
+        <button class="btn btn-primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : target === 'new' ? 'Add user' : 'Save changes' }}
+        </button>
+      </form>
+    </aside>
+  }
+</div>

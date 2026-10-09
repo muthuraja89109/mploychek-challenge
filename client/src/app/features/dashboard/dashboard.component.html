@@ -1,0 +1,197 @@
+<div class="head">
+  <div>
+    <h1>Verification desk</h1>
+    <p class="lede">Your profile and the records your clearance allows you to open.</p>
+  </div>
+
+  <div class="latency" role="group" aria-label="Simulated API delay">
+    <span class="label">API delay</span>
+    <div class="seg">
+      @for (o of latencyOptions; track o.ms) {
+        <button type="button" [class.on]="latency.ms() === o.ms" [attr.aria-pressed]="latency.ms() === o.ms"
+                (click)="setLatency(o.ms)">{{ o.label }}</button>
+      }
+    </div>
+    <button class="btn btn-quiet btn-small" type="button" (click)="reload()">Reload</button>
+  </div>
+</div>
+
+<div class="grid">
+  <!-- LEFT: who you are + what the network is doing -->
+  <div class="side">
+    <section class="card profile" aria-labelledby="profile-h" [attr.aria-busy]="profile().status === 'loading'">
+      <h2 id="profile-h" class="sr-only">Your profile</h2>
+
+      @switch (profile().status) {
+        @case ('loading') {
+          <span class="skeleton" style="width: 108px; height: 108px; border-radius: 50%"></span>
+          <span class="skeleton" style="width: 60%; height: 22px"></span>
+          <span class="skeleton" style="width: 90%"></span>
+          <span class="skeleton" style="width: 75%"></span>
+        }
+        @case ('error') {
+          <p class="form-error" role="alert">{{ $any(profile()).message }}</p>
+          <button class="btn btn-quiet btn-small" type="button" (click)="reload()">Try again</button>
+        }
+        @case ('ready') {
+          @if (profile(); as p) {
+            @if (p.status === 'ready') {
+              <div class="seal" [attr.data-level]="level()" role="img"
+                   [attr.aria-label]="'Clearance level ' + level()">
+                <span class="seal-top">Clearance</span>
+                <strong>L{{ level() }}</strong>
+                <span class="seal-bottom">{{ level() === 3 ? 'Full' : 'Public' }}</span>
+              </div>
+              <div class="who">
+                <h3>{{ p.data.name }}</h3>
+                <app-role-badge [role]="p.data.role" />
+              </div>
+              <dl>
+                <div><dt>User ID</dt><dd>{{ p.data.userId }}</dd></div>
+                <div><dt>Email</dt><dd>{{ p.data.email }}</dd></div>
+                <div><dt>Department</dt><dd>{{ p.data.department }}</dd></div>
+                <div><dt>Member since</dt><dd>{{ p.data.createdAt | date: 'd MMM y' }}</dd></div>
+              </dl>
+            }
+          }
+        }
+      }
+    </section>
+
+    <section class="card activity" aria-labelledby="act-h">
+      <h2 id="act-h">Network activity</h2>
+      <p class="hint">Both requests start together. Each section fills in the moment its data arrives.</p>
+      <ul>
+        @for (e of activity.entries(); track e.id) {
+          <li>
+            <div class="line">
+              <code>{{ e.label }}</code>
+              <span class="state" [class]="e.status">
+                @switch (e.status) {
+                  @case ('pending') { waiting… }
+                  @case ('ok') { {{ e.durationMs }} ms }
+                  @case ('failed') { failed }
+                  @case ('cancelled') { replaced }
+                }
+              </span>
+            </div>
+            <div class="track">
+              <span class="fill" [class]="e.status" [style.width.%]="e.status === 'pending' ? null : (e.durationMs ?? 0) / 80"></span>
+            </div>
+          </li>
+        }
+      </ul>
+    </section>
+  </div>
+
+  <!-- RIGHT: records table -->
+  <section class="card records" aria-labelledby="rec-h" [attr.aria-busy]="records().status === 'loading'">
+    <div class="rec-head">
+      <h2 id="rec-h">Verification records</h2>
+      @if (records().status === 'ready') {
+        <span class="count">{{ filtered().length }} shown</span>
+      }
+    </div>
+
+    @if (records().status === 'ready') {
+      <div class="filters">
+        <div class="field grow">
+          <label for="q" class="sr-only">Search records</label>
+          <input id="q" type="search" placeholder="Search by reference, candidate or check"
+                 [value]="query()" (input)="onQuery($any($event.target).value)" />
+        </div>
+        <div class="field">
+          <label for="st" class="sr-only">Filter by status</label>
+          <select id="st" [value]="statusFilter()" (change)="onStatus($any($event.target).value)">
+            @for (s of statuses; track s) {
+              <option [value]="s">{{ s === 'All' ? 'All statuses' : s }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    }
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            @for (col of [
+              { k: 'reference', t: 'Reference' }, { k: 'candidate', t: 'Candidate' },
+              { k: 'check', t: 'Check' }, { k: 'status', t: 'Status' },
+              { k: 'accessLevel', t: 'Level' }, { k: 'updatedOn', t: 'Updated' }
+            ]; track col.k) {
+              <th scope="col" [attr.aria-sort]="ariaSort($any(col.k))">
+                <button type="button" (click)="sortBy($any(col.k))" [disabled]="records().status !== 'ready'">
+                  {{ col.t }}
+                  <span class="arrow" aria-hidden="true">{{ sortKey() === col.k ? (sortDir() === 'asc' ? '↑' : '↓') : '' }}</span>
+                </button>
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @switch (records().status) {
+            @case ('loading') {
+              @for (i of skeletonRows; track i) {
+                <tr class="sk">
+                  <td><span class="skeleton" style="width: 64px"></span></td>
+                  <td><span class="skeleton" style="width: 120px"></span></td>
+                  <td><span class="skeleton" style="width: 110px"></span></td>
+                  <td><span class="skeleton" style="width: 84px"></span></td>
+                  <td><span class="skeleton" style="width: 28px"></span></td>
+                  <td><span class="skeleton" style="width: 72px"></span></td>
+                </tr>
+              }
+            }
+            @case ('error') {
+              <tr><td colspan="6">
+                <p class="form-error" role="alert">{{ $any(records()).message }}</p>
+                <button class="btn btn-quiet btn-small retry" type="button" (click)="reload()">Try again</button>
+              </td></tr>
+            }
+            @case ('ready') {
+              @for (r of pageRows(); track r.id) {
+                <tr>
+                  <td class="ref">{{ r.reference }}</td>
+                  <td>{{ r.candidate }}</td>
+                  <td>{{ r.check }}</td>
+                  <td><span class="pill" [class]="'pill ' + pillClass(r.status)">{{ r.status }}</span></td>
+                  <td><span class="lvl" [attr.data-level]="r.accessLevel">L{{ r.accessLevel }}</span></td>
+                  <td class="date">{{ r.updatedOn | date: 'd MMM y' }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="6" class="empty">
+                  <p>No records match your search.</p>
+                  <button class="btn btn-quiet btn-small" type="button" (click)="clearFilters()">Clear search and filters</button>
+                </td></tr>
+              }
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (records().status === 'ready') {
+      <!-- Records above your clearance: shown as redacted bars, never as data -->
+      @if (redactions().length) {
+        <div class="redacted" role="note">
+          @for (r of redactions(); track $index) {
+            <div class="rbar"><span style="width: 18%"></span><span style="width: 28%"></span><span style="width: 14%"></span></div>
+          }
+          <p>
+            {{ $any(records()).data.hidden }} more
+            {{ $any(records()).data.hidden === 1 ? 'record needs' : 'records need' }} Admin clearance.
+          </p>
+        </div>
+      }
+
+      <div class="pager">
+        <span>Page {{ page() + 1 }} of {{ pageCount() }}</span>
+        <div>
+          <button class="btn btn-quiet btn-small" type="button" [disabled]="page() === 0" (click)="page.set(page() - 1)">Previous</button>
+          <button class="btn btn-quiet btn-small" type="button" [disabled]="page() + 1 >= pageCount()" (click)="page.set(page() + 1)">Next</button>
+        </div>
+      </div>
+    }
+  </section>
+</div>

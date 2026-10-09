@@ -1,0 +1,51 @@
+.layout { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
+
+/* Left: brand story, with a "redacted" preview of the product's core idea */
+.story {
+  background: #14214a; color: #e8edf7;
+  padding: 48px clamp(28px, 5vw, 72px);
+  display: flex; flex-direction: column; justify-content: center; gap: 28px;
+}
+.story-brand { display: flex; align-items: center; gap: 10px; font: 800 22px var(--font-display); }
+.story h2 { font-size: clamp(30px, 3.6vw, 46px); max-width: 15ch; font-weight: 800; }
+.story-note { color: #aab6d3; max-width: 36ch; }
+
+.redacted-demo {
+  background: #1b2b5a; border: 1px solid #2c3f7a; border-radius: 12px;
+  padding: 8px 16px; max-width: 360px;
+}
+.row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid #2c3f7a; font-weight: 600; font-size: 15px;
+}
+.row:last-child { border-bottom: 0; }
+.ok { color: #3ddba9; }
+.wait { color: #f0bf55; }
+.bar { display: block; height: 14px; border-radius: 3px; background: #e8edf7; }
+
+/* Right: the form */
+.panel { display: grid; place-items: center; padding: 32px 20px; }
+.form { width: 100%; max-width: 420px; padding: 32px; display: grid; gap: 20px; }
+h1 { font-size: 30px; font-weight: 800; }
+.sub { color: var(--muted); margin-top: 4px; }
+
+fieldset.role { border: 0; padding: 0; margin: 0; min-width: 0; }
+fieldset.role legend { padding: 0; margin-bottom: 6px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+.seg label {
+  display: grid; place-items: center; min-height: 38px; border-radius: 8px;
+  font-weight: 600; font-size: 14px; color: var(--muted); cursor: pointer;
+}
+.seg label.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgb(0 0 0 / 15%); }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:focus-within { outline: 3px solid var(--focus); outline-offset: 1px; }
+
+.demo { display: flex; gap: 14px; align-items: center; font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+.link { background: none; border: 0; padding: 0; color: var(--primary); font-weight: 600; text-decoration: underline; cursor: pointer; }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  .story { padding: 28px 24px; gap: 16px; }
+  .story h2 { font-size: 26px; }
+  .redacted-demo, .story-note { display: none; }
+}
